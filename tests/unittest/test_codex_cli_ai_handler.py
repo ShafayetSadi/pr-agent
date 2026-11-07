@@ -114,7 +114,7 @@ async def test_runs_locked_down_codex_exec_and_records_usage(fake_cli, monkeypat
 @pytest.mark.asyncio
 async def test_bare_prefix_uses_cli_default_model_and_ignores_bad_effort(fake_cli):
     configure, read_record = fake_cli
-    configure(**{"codex.reasoning_effort": "max"})
+    configure(**{"codex.reasoning_effort": "turbo", "config.reasoning_effort": ""})
 
     await CodexCLIAIHandler().chat_completion(model="codex/", system="s", user="u")
 
@@ -154,6 +154,31 @@ async def test_missing_cli_reports_setup_hint(tmp_path, monkeypatch):
     monkeypatch.setattr(codex_handler, "get_settings", lambda: settings)
     with pytest.raises(CodexCLIError, match="codex login"):
         await CodexCLIAIHandler().chat_completion(model="codex/m", system="s", user="u")
+
+
+@pytest.mark.parametrize("codex_effort, config_effort, expected", [
+    ("", "medium", "medium"),        # empty inherits the global effort
+    (None, "HIGH", "high"),
+    ("", "none", "minimal"),         # efforts Codex lacks map to its nearest level
+    ("", "max", "xhigh"),
+    ("max", "low", "xhigh"),
+    ("low", "high", "low"),          # an explicit Codex effort wins
+    ("turbo", "medium", "medium"),   # an unsupported Codex effort falls through to the global one
+    ("", "turbo", ""),               # nothing usable: let the CLI default apply
+    ("", "", ""),
+])
+def test_reasoning_effort_resolution(monkeypatch, codex_effort, config_effort, expected):
+    settings = _Settings({"codex.reasoning_effort": codex_effort, "config.reasoning_effort": config_effort})
+    monkeypatch.setattr(codex_handler, "get_settings", lambda: settings)
+    assert codex_handler._codex_settings()[2] == expected
+
+
+@pytest.mark.asyncio
+async def test_inherited_effort_reaches_cli(fake_cli):
+    configure, read_record = fake_cli
+    configure(**{"config.reasoning_effort": "medium"})
+    await CodexCLIAIHandler().chat_completion(model="codex/m", system="s", user="u")
+    assert 'model_reasoning_effort="medium"' in read_record()["args"]
 
 
 @pytest.mark.parametrize("value", [0, -5, "soon", None])

@@ -854,8 +854,10 @@ Install the CLI and sign in once on the machine that runs PR-Agent (`codex login
 [codex]  # host-only: a repository's .pr_agent.toml cannot set these keys
 cli_path = "codex"        # executable name or absolute path
 timeout_seconds = 600     # per-call limit; a timed-out call moves on to the fallback models
-reasoning_effort = ""     # "minimal", "low", "medium", "high" or "xhigh"; empty uses the CLI default
+reasoning_effort = ""     # "minimal", "low", "medium", "high" or "xhigh"; empty inherits config.reasoning_effort
 ```
+
+With `codex.reasoning_effort` empty, Codex calls use `config.reasoning_effort` (default `"medium"`), the same effort API models receive. The Codex CLI has no `"none"` or `"max"`, so those map to `"minimal"` and `"xhigh"`. An unsupported value is ignored with a warning, and when neither key yields a usable value the CLI uses the model's own default.
 
 Each call runs in an empty temporary directory with the shell, MCP servers, apps, plugins, browser, hooks and web search turned off and `~/.codex/config.toml` ignored, so prompt content from a pull request cannot make Codex run commands or read host files. `OPENAI_API_KEY` and `OPENAI_BASE_URL` are removed from the CLI's environment so it does not switch to API-key billing. Temperature and image inputs are ignored, and each call also carries the CLI's own system prompt, which adds roughly 10,000 to 15,000 input tokens per call that count toward the plan's usage limits.
 

@@ -553,7 +553,7 @@ See [Codex CLI](../usage-guide/changing_a_model.md#codex-cli-chatgpt-subscriptio
 | --- | --- | --- |
 | `cli_path` | "codex" | Codex CLI executable name or absolute path |
 | `timeout_seconds` | 600 | seconds one Codex CLI call may run before it is killed |
-| `reasoning_effort` | "" | "minimal", "low", "medium", "high" or "xhigh"; empty uses the Codex CLI default |
+| `reasoning_effort` | "" | "minimal", "low", "medium", "high" or "xhigh"; empty inherits config.reasoning_effort ("none"->minimal, "max"->xhigh) |
 
 
 ## `[model_routing]` — send a small pull request to a cheaper primary model (disabled by default) {#model_routing-send a small pull request to a cheaper primary model (disabled by default)}

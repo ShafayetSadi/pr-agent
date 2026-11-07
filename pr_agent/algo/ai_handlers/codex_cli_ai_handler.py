@@ -17,6 +17,8 @@ CODEX_MODEL_PREFIX = "codex/"
 DEFAULT_CLI_PATH = "codex"
 DEFAULT_TIMEOUT_SECONDS = 600
 CODEX_REASONING_EFFORTS = frozenset({"minimal", "low", "medium", "high", "xhigh"})
+# PR-Agent efforts the Codex CLI lacks, mapped to its nearest level.
+_CODEX_EFFORT_ALIASES = {"none": "minimal", "max": "xhigh"}
 _ERROR_DETAIL_CHARS = 2000
 
 # The prompt carries untrusted pull-request content, so Codex runs as a plain text model:
@@ -70,11 +72,20 @@ def _codex_settings():
     if timeout <= 0:
         get_logger().warning(f"Invalid codex.timeout_seconds; using {DEFAULT_TIMEOUT_SECONDS}")
         timeout = DEFAULT_TIMEOUT_SECONDS
-    effort = str(settings.get("CODEX.REASONING_EFFORT", "") or "").strip().lower()
-    if effort and effort not in CODEX_REASONING_EFFORTS:
-        get_logger().warning(f"Ignoring unsupported codex.reasoning_effort {effort!r}")
-        effort = ""
-    return cli_path, timeout, effort
+    return cli_path, timeout, _resolve_reasoning_effort(settings)
+
+
+def _resolve_reasoning_effort(settings) -> str:
+    """Return the Codex effort: codex.reasoning_effort, else config.reasoning_effort, else "" (CLI default)."""
+    for key in ("CODEX.REASONING_EFFORT", "CONFIG.REASONING_EFFORT"):
+        effort = str(settings.get(key, "") or "").strip().lower()
+        if not effort:
+            continue
+        effort = _CODEX_EFFORT_ALIASES.get(effort, effort)
+        if effort in CODEX_REASONING_EFFORTS:
+            return effort
+        get_logger().warning(f"Ignoring unsupported {key.lower()} {effort!r} for the Codex CLI")
+    return ""
 
 
 def _render_prompt(messages: list[dict]) -> str:
