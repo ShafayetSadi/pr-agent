@@ -131,6 +131,7 @@ from pr_agent.algo.ai_handlers.cloud_auth import (
     _vertex_request_credentials,
     _vertex_request_default_adc,
 )
+from pr_agent.algo.ai_handlers.codex_cli_ai_handler import CodexCLIAIHandler, is_codex_model
 from pr_agent.algo.ai_handlers.litellm_helpers import (
     EmptyTruncatedResponseError,
     _close_stream,
@@ -2927,6 +2928,11 @@ class LiteLLMAIHandler(BaseAiHandler):
         return None
 
     async def chat_completion(self, model: str, system: str, user: str, temperature: float = 0.2, img_path: str = None):
+        if is_codex_model(model):
+            # "codex/..." models run through the local Codex CLI instead of LiteLLM.
+            if getattr(self, "_codex_cli_handler", None) is None:
+                self._codex_cli_handler = CodexCLIAIHandler()
+            return await self._codex_cli_handler.chat_completion(model, system, user, temperature, img_path)
         configured_deployment_id = self.deployment_id
         return await self._chat_completion_with_retry(
             model,

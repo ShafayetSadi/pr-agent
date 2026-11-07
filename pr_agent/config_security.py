@@ -23,12 +23,16 @@
 # bedrock: guardrail settings are host-only so a repository cannot disable or swap the guardrail.
 # custom_labels and config.enable_custom_labels are host-only because every configured custom label
 # is treated as PR-Agent-owned and may be removed when it is absent from the generated label set.
+#
+# codex: cli_path names an executable the host runs, and timeout_seconds bounds worker occupancy,
+# so a repository must not choose either. The whole section is host-only.
 REPO_OVERRIDABLE_KEYS_BY_HOST_SECTION = {
     "skills": frozenset({"enabled", "max_skills_tokens"}),
     "push_outputs": frozenset(),
     "prompt_fragments": frozenset(),
     "bedrock": frozenset(),
     "custom_labels": frozenset(),
+    "codex": frozenset(),
 }
 
 _CONNECTION_KEY_SUFFIXES = ("url", "base_url", "endpoint", "org", "key", "token", "secret")

@@ -96,6 +96,9 @@ def get_max_tokens(model, ignore_max_model_tokens=False):
     raw model context size rather than the conservative clamp.
     """
     settings = get_settings()
+    if isinstance(model, str) and model.startswith("codex/"):
+        # Codex CLI models share the limits of the model they name.
+        model = model.removeprefix("codex/")
     custom_max_tokens = _as_int(settings.config.custom_model_max_tokens)
     model_base, native_gpt6_route = _gpt6_budget_model(model, settings)
     # Resolve supported aliases while preserving custom limits on non-native routes.

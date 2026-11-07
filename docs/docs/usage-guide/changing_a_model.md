@@ -838,6 +838,29 @@ Authentication uses the [GitHub Copilot provider](https://docs.litellm.ai/docs/p
 
 Whether Copilot's terms permit this programmatic use is a question for GitHub rather than a guarantee this project can make, so confirm before relying on the route.
 
+### Codex CLI (ChatGPT subscription)
+
+Models named `codex/<model>` are not sent through litellm. PR-Agent runs the [Codex CLI](https://github.com/openai/codex) (`codex exec`) on the host instead, so calls use the CLI's own sign-in and, after `codex login` with "Sign in with ChatGPT", count against that ChatGPT plan rather than an API key:
+
+```toml
+[config]
+model = "codex/gpt-6.1-sol"
+fallback_models = []
+```
+
+Install the CLI and sign in once on the machine that runs PR-Agent (`codex login status` should report "Logged in using ChatGPT"). `codex debug models` lists the models your plan offers; not every API model is available with a ChatGPT sign-in. `codex/` with no model name uses the CLI's default model; set `config.custom_model_max_tokens` in that case, because PR-Agent cannot look up the limit. Named models use the limits of the model after the prefix.
+
+```toml
+[codex]  # host-only: a repository's .pr_agent.toml cannot set these keys
+cli_path = "codex"        # executable name or absolute path
+timeout_seconds = 600     # per-call limit; a timed-out call moves on to the fallback models
+reasoning_effort = ""     # "minimal", "low", "medium", "high" or "xhigh"; empty uses the CLI default
+```
+
+Each call runs in an empty temporary directory with the shell, MCP servers, apps, plugins, browser, hooks and web search turned off and `~/.codex/config.toml` ignored, so prompt content from a pull request cannot make Codex run commands or read host files. `OPENAI_API_KEY` and `OPENAI_BASE_URL` are removed from the CLI's environment so it does not switch to API-key billing. Temperature and image inputs are ignored, and each call also carries the CLI's own system prompt, which adds roughly 10,000 to 15,000 input tokens per call that count toward the plan's usage limits.
+
+The sign-in lives in `~/.codex/auth.json` (or under `CODEX_HOME`), so this route suits a personal machine or CLI use. Copying that file to a shared server or CI runner exposes your ChatGPT account, and whether OpenAI's terms for your plan allow automated use is for OpenAI to confirm.
+
 ### Custom models
 
 If the relevant model doesn't appear [here](https://github.com/the-pr-agent/pr-agent/blob/main/pr_agent/algo/__init__.py), you can still use it as a custom model:

@@ -110,6 +110,7 @@ SECTION_DOCS = {
     "litellm": ("Changing a model", "../usage-guide/changing_a_model.md#changing-a-model-in-pr-agent"),
     "bedrock": ("Amazon Bedrock", "../usage-guide/changing_a_model.md#amazon-bedrock"),
     "openrouter": ("OpenRouter", "../usage-guide/changing_a_model.md#openrouter"),
+    "codex": ("Codex CLI", "../usage-guide/changing_a_model.md#codex-cli-chatgpt-subscription"),
     "model_routing": (
         "Model routing",
         "../usage-guide/changing_a_model.md#routing-small-pull-requests-to-a-cheaper-model",

@@ -545,6 +545,17 @@ See [OpenRouter](../usage-guide/changing_a_model.md#openrouter).
 | `max_tokens` | 0 | hard cap on completion tokens for the request; 0 = unset |
 
 
+## `[codex]` {#codex}
+
+See [Codex CLI](../usage-guide/changing_a_model.md#codex-cli-chatgpt-subscription).
+
+| Key | Default | Description |
+| --- | --- | --- |
+| `cli_path` | "codex" | Codex CLI executable name or absolute path |
+| `timeout_seconds` | 600 | seconds one Codex CLI call may run before it is killed |
+| `reasoning_effort` | "" | "minimal", "low", "medium", "high" or "xhigh"; empty uses the Codex CLI default |
+
+
 ## `[model_routing]` — send a small pull request to a cheaper primary model (disabled by default) {#model_routing-send a small pull request to a cheaper primary model (disabled by default)}
 
 See [Model routing](../usage-guide/changing_a_model.md#routing-small-pull-requests-to-a-cheaper-model).
